@@ -1,6 +1,8 @@
 from vpython import *
 import math
+
 from sympy import Symbol, real_roots
+
 
 # Web VPython 3.2
 
@@ -45,6 +47,7 @@ def main():
                   trail_type='points', interval=10, retain=50000)
     enemy = sphere(pos=vector(ex, ey, ez), radius=radius, color=color.red, make_trail=True,
                    trail_type='points', interval=10, retain=50000)
+
     running = True
     a4 = (g**2) / 4
     a3 = g * evy
@@ -97,6 +100,7 @@ def main():
                                         break
                                     except Exception:
                                         scene.append_to_caption("There is no collision\n")
+
         else:
             scene.append_to_caption("There is no collision\n")
     enemy_running = True
