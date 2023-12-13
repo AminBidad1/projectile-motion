@@ -1,7 +1,7 @@
 from vpython import *
 import math
 
-from sympy import Symbol, real_roots
+import numpy as np
 
 
 # Web VPython 3.2
@@ -22,7 +22,7 @@ def equal_approximation(val1, val2):
 
 
 def get_dt():
-    dt = input("Enter yuor dt: ")
+    dt = input("Enter your dt: ")
     if not dt:
         return 0.005
     return float(dt)
@@ -42,8 +42,9 @@ def main():
     v0 = float(input("Enter your V0 size: "))
     radius = float(input("Enter your radius: "))
     dt = get_dt()
+    get_max = input("Do you want to get max of time? (press y or n) ")
     t = 0
-    ball = sphere(pos=vector(sx, sy, sz), radius=radius, color=color.blue, make_trail=True,
+    ball = sphere(pos=vector(sx, sy, sz), radius=radius, color=color.yellow, make_trail=True,
                   trail_type='points', interval=10, retain=50000)
     enemy = sphere(pos=vector(ex, ey, ez), radius=radius, color=color.red, make_trail=True,
                    trail_type='points', interval=10, retain=50000)
@@ -51,11 +52,13 @@ def main():
     running = True
     a4 = (g**2) / 4
     a3 = g * evy
-    a2 = evx**2 + evy**2 + evx**2 + g*ey - v0**2
+    a2 = evx**2 + evy**2 + evz**2 + g*ey - v0**2
     a1 = 2 * (evx*ex + evy*ey + evz*ez)
     a0 = ex**2 + ey**2 + ez**2
-    x = Symbol('x', real=True)
-    results = real_roots(a4*x**4 + a3*x**3 + a2*x**2 + a1*x + a0, x)
+    real_roots = np.roots([a4, a3, a2, a1, a0])
+    real_roots = real_roots[np.isreal(real_roots)]
+    results = [float(root) for root in real_roots]
+
     print(results)
     vx = 0
     vy = 0
@@ -63,43 +66,44 @@ def main():
     if not results:
         scene.append_to_caption("There is no collision\n")
     else:
+        results.sort()
+        if get_max == 'y':
+            results.reverse()
         for time in results:
-            if "I" not in str(time):
-                time = float(time)
-                if time > 0:
-                    vx = (evx*time+ex)/time
-                    vz = (evz*time+ez)/time
-                    vy = (0.5*g*time**2 + evy*time + ey)/time
-                    if equal_approximation(vx*time, evx*time + ex):
-                        if equal_approximation(vz*time, evz*time + ez):
-                            if equal_approximation(-0.5*g*time**2 + vy*time, evy*time + ey):
-                                if evy*time + ey > 0:
-                                    try:
-                                        teta_x = math.degrees(math.acos(vx/v0))
-                                        teta_z = math.degrees(math.acos(vz/v0))
-                                        print(vy/v0)
-                                        teta_y = math.degrees(math.acos(vy/v0))
+            if time > 0:
+                vx = (evx*time+ex)/time
+                vz = (evz*time+ez)/time
+                vy = (0.5*g*time**2 + evy*time + ey)/time
+                if equal_approximation(vx*time, evx*time + ex):
+                    if equal_approximation(vz*time, evz*time + ez):
+                        if equal_approximation(-0.5*g*time**2 + vy*time, evy*time + ey):
+                            if evy*time + ey > 0:
+                                try:
+                                    teta_x = math.degrees(math.acos(vx/v0))
+                                    teta_z = math.degrees(math.acos(vz/v0))
+                                    print(vy/v0)
+                                    teta_y = math.degrees(math.acos(vy/v0))
 
-                                        x_fianl = evx*time + ex
-                                        y_final = evy*time + ey
-                                        z_final = evz*time + ez
-                                        scene.append_to_caption(f"teta x: {round(teta_x, 2)} |"
-                                                                f" teta y: {round(teta_y, 2)} |"
-                                                                f" teta z: {round(teta_z, 2)}")
-                                        scene.append_to_caption("\n" + f"Vx: {round(vx, 2)}m/s |"
-                                                                       f" Vy: {round(vy, 2)}m/s |"
-                                                                       f" Vz: {round(vz, 2)}m/s")
-                                        scene.append_to_caption(
-                                            "\n" + f"fianl X: {round(x_fianl, 2)}m |"
-                                                   f"final Y: {round(y_final, 2)}m |"
-                                                   f"final Z: {round(z_final, 2)}m"
-                                        )
-                                        scene.append_to_caption("\n" +
-                                                                f"final time: {round(time, 2)}s"
-                                                                + "\n")
-                                        break
-                                    except Exception:
-                                        scene.append_to_caption("There is no collision\n")
+                                    x_fianl = evx*time + ex
+                                    y_final = evy*time + ey
+                                    z_final = evz*time + ez
+                                    scene.append_to_caption(f"teta x: {round(teta_x, 2)} |"
+                                                            f" teta y: {round(teta_y, 2)} |"
+                                                            f" teta z: {round(teta_z, 2)}")
+                                    scene.append_to_caption("\n" + f"Vx: {round(vx, 2)}m/s |"
+                                                                   f" Vy: {round(vy, 2)}m/s |"
+                                                                   f" Vz: {round(vz, 2)}m/s")
+                                    scene.append_to_caption(
+                                        "\n" + f"fianl X: {round(x_fianl, 2)}m |"
+                                               f"final Y: {round(y_final, 2)}m |"
+                                               f"final Z: {round(z_final, 2)}m"
+                                    )
+                                    scene.append_to_caption("\n" +
+                                                            f"final time: {round(time, 2)}s"
+                                                            + "\n")
+                                    break
+                                except Exception:
+                                    scene.append_to_caption("There is no collision\n")
 
         else:
             scene.append_to_caption("There is no collision\n")
@@ -124,7 +128,6 @@ def main():
             t += dt
             if sy < 0:
                 running = False
-                print(sx, sy, sz)
 
 
 if __name__ == "__main__":
